@@ -6,22 +6,26 @@ HP LaserJet 1020 Mac Driver 可为 HP LaserJet 1020 打印机构建本地 macOS 
 
 本项目没有重新实现打印机协议。构建输入来自 [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac)。上游过滤器包含 **x86_64** 代码，并非通用二进制文件；Intel Mac 可直接运行，Apple 芯片 Mac 需要 Rosetta。安装包还依赖旧式 CUPS PPD 驱动机制，未来的 macOS 版本可能改变这一机制。上游仓库称其驱动可在 macOS 26 Tahoe 上使用。本项目的自动检查覆盖安装包内容和 PPD；实际打印仍需连接 HP LaserJet 1020 测试。
 
-## 构建本地 Release 文件
+## 安装驱动
 
-需要 macOS、Xcode Command Line Tools（提供 `pkgbuild` 和 `lipo`）及网络连接。在项目目录运行：
+从 [v0.7.0 GitHub Release](https://github.com/Bald-M/hp-laserjet1020-mac-driver/releases/tag/v0.7.0) 下载 `HPLaserJet1020MacDriver-0.7.0.pkg`，然后在 Finder 中打开。Release 还提供 `SHA256SUMS`，可用来校验下载的安装包。
+
+### 从源码构建
+
+自行构建安装包需要 macOS、Xcode Command Line Tools（提供 `pkgbuild` 和 `lipo`）及网络连接。在项目目录运行：
 
 ```sh
 cd "$HOME/Code/hp-laserjet1020-mac-driver"
 make release
 ```
 
-`make package` 或 `make release` 只生成一个 Release 文件：`dist/HPLaserJet1020MacDriver-0.7.0.pkg`。发布前请确认第三方驱动文件的分发权利。指定版本的上游文件会下载到被 Git 忽略的 `build/upstream/` 目录。如果已有上游仓库的本地副本，可用 `make release SOURCE_DIR=/path/to/hp1020-driver-mac` 离线构建。在 Finder 中打开 `.pkg` 即可安装，也可运行：
+`make package` 或 `make release` 会构建 `dist/HPLaserJet1020MacDriver-0.7.0.pkg`。发布前请确认第三方驱动文件的分发权利。指定版本的上游文件会下载到被 Git 忽略的 `build/upstream/` 目录。如果已有上游仓库的本地副本，可用 `make release SOURCE_DIR=/path/to/hp1020-driver-mac` 离线构建。可在 Finder 中打开本地构建的 `.pkg`，或在终端运行：
 
 ```sh
 sudo installer -pkg dist/HPLaserJet1020MacDriver-0.7.0.pkg -target /
 ```
 
-这个本地构建的安装包没有 Developer ID 签名，也没有经过公证。本项目不发布含第三方驱动资源的安装包。发布或分发前请确认这些资源的使用权利，详情见 [THIRD_PARTY.md](THIRD_PARTY.md)。
+安装包没有 Developer ID 签名，也没有经过公证。GitHub Release 包含不受本项目 MIT 许可证覆盖的第三方驱动资源。再分发安装包前请确认这些资源的使用权利，详情见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
 ### Apple 芯片 Mac
 
