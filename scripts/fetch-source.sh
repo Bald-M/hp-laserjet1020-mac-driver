@@ -20,4 +20,9 @@ if [[ "$actual" != "$commit" ]]; then
   echo "Cached source is at $actual, expected $commit" >&2
   exit 1
 fi
+if [[ -n "$(git -C "$source_dir" status --porcelain --untracked-files=no -- \
+  'HP LaserJet 1022.gz' rasterToHPZJS commandToHPZJS hp1020.acl)" ]]; then
+  echo "Cached driver files have local modifications: $source_dir" >&2
+  exit 1
+fi
 echo "Using reference driver files from $source_dir ($commit)"
