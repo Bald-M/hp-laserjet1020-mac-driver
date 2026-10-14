@@ -6,22 +6,26 @@ HP LaserJet 1020 Mac Driver builds a local macOS installer for the HP LaserJet 1
 
 This project does not reimplement the printer protocol. Its build inputs come from [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac). That repository's filters contain **x86_64** code, not universal binaries. They run directly on Intel Macs; Apple silicon Macs need Rosetta. The package also relies on the legacy CUPS PPD driver mechanism, which future macOS versions may change. The reference repository reports that its driver works on macOS 26 Tahoe. This project's automated checks cover the package contents and PPD; printing still needs to be tested with a connected HP LaserJet 1020.
 
-## Build local release files
+## Install the driver
 
-You need macOS, Xcode Command Line Tools (for `pkgbuild` and `lipo`), and network access. From the project directory, run:
+Download `HPLaserJet1020MacDriver-0.7.0.pkg` from the [v0.7.0 GitHub Release](https://github.com/Bald-M/hp-laserjet1020-mac-driver/releases/tag/v0.7.0) and open it in Finder. The Release also provides `SHA256SUMS` so you can verify the downloaded package.
+
+### Build from source
+
+To build your own package, you need macOS, Xcode Command Line Tools (for `pkgbuild` and `lipo`), and network access. From the project directory, run:
 
 ```sh
 cd "$HOME/Code/hp-laserjet1020-mac-driver"
 make release
 ```
 
-`make package` or `make release` builds one release asset: `dist/HPLaserJet1020MacDriver-0.7.0.pkg`. Check the rights for the third-party driver files before publishing it. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the `.pkg` in Finder to install, or use:
+`make package` or `make release` builds `dist/HPLaserJet1020MacDriver-0.7.0.pkg`. Check the rights for the third-party driver files before publishing it. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open your locally built `.pkg` in Finder, or install it from Terminal:
 
 ```sh
 sudo installer -pkg dist/HPLaserJet1020MacDriver-0.7.0.pkg -target /
 ```
 
-This locally built package is not Developer ID signed or notarized. This project does not publish packages containing the third-party driver assets. Check the rights for those assets before publishing or redistributing a package; see [THIRD_PARTY.md](THIRD_PARTY.md).
+The package is not Developer ID signed or notarized. The GitHub Release includes third-party driver assets that are not covered by this project's MIT license. Check the rights for those assets before redistributing the package; see [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ### Apple silicon Macs
 
