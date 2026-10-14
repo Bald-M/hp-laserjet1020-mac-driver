@@ -12,6 +12,11 @@ if is_our_queue_ppd "$ppd_file"; then
   echo 'Matched a queue by NickName alone' >&2
   exit 1
 fi
+printf '*%% Former filter: /Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS\n' >> "$ppd_file"
+if is_our_queue_ppd "$ppd_file"; then
+  echo 'Matched a filter path in a comment' >&2
+  exit 1
+fi
 printf '*cupsFilter: "application/vnd.cups-raster 100 /Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS"\n' >> "$ppd_file"
 is_our_queue_ppd "$ppd_file"
 echo 'Queue ownership test passed.'

@@ -17,8 +17,8 @@ files=(
 )
 
 is_our_queue_ppd() {
-  [[ -f "$1" ]] && /usr/bin/grep -Fq \
-    '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS' "$1"
+  [[ -f "$1" ]] && /usr/bin/grep -Fxq \
+    '*cupsFilter: "application/vnd.cups-raster 100 /Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS"' "$1"
 }
 
 if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
