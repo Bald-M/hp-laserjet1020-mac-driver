@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+
+legacy_app='/Applications/Uninstall LaserJet 1020 Mac Kit.app'
+legacy_script='/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
+legacy_receipt='com.laserjet1020mackit.uninstaller'
+
+if [[ -d "$legacy_app" && ! -L "$legacy_app" ]] &&
+  [[ "$(/usr/bin/plutil -extract CFBundleIdentifier raw -o - "$legacy_app/Contents/Info.plist" 2>/dev/null)" == "$legacy_receipt" ]]; then
+  /bin/rm -rf "$legacy_app"
+fi
+if [[ -f "$legacy_script" && ! -L "$legacy_script" ]]; then
+  /bin/rm -f "$legacy_script"
+fi
+if /usr/sbin/pkgutil --pkg-info "$legacy_receipt" >/dev/null 2>&1; then
+  /usr/sbin/pkgutil --forget "$legacy_receipt"
+fi

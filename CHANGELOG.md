@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 — 2026-10-14
+
+- Reduced the local release to one driver installer `.pkg`.
+- Replaced the graphical uninstaller with an installed `uninstall.sh` script.
+- Added upgrade cleanup for the old uninstaller app, script, and standalone package receipt.
+
 ## 0.5.0 — 2026-10-14
 
 - Replaced the standalone uninstaller ZIP with a `.pkg` that installs the graphical uninstaller in Applications without manual extraction.

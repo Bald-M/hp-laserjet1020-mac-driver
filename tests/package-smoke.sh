@@ -19,10 +19,10 @@ mkdir -p "$work_dir/payload"
 payload="$work_dir/payload/Library"
 bundle="$payload/Printers/LaserJet1020MacKit/LaserJet1020.bundle"
 ppd="$payload/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz"
-uninstaller="$payload/Application Support/LaserJet1020MacKit/Uninstall.command"
+uninstaller="$payload/Application Support/LaserJet1020MacKit/uninstall.sh"
 add_printer="$payload/Application Support/LaserJet1020MacKit/AddPrinter.command"
 app="$work_dir/payload/Applications/LaserJet 1020 Mac Kit.app"
-uninstall_app="$work_dir/payload/Applications/Uninstall LaserJet 1020 Mac Kit.app"
+legacy_uninstall_app="$work_dir/payload/Applications/Uninstall LaserJet 1020 Mac Kit.app"
 [[ -x "$bundle/Contents/MacOS/rasterToHPZJS" ]]
 [[ -x "$bundle/Contents/MacOS/commandToHPZJS" ]]
 [[ -s "$bundle/Contents/Resources/hp1020.acl" ]]
@@ -34,18 +34,14 @@ uninstall_app="$work_dir/payload/Applications/Uninstall LaserJet 1020 Mac Kit.ap
 codesign --verify --deep --strict "$app"
 osadecompile "$app/Contents/Resources/Scripts/main.scpt" > "$work_dir/manager.applescript"
 grep -Fq 'AddPrinter.command' "$work_dir/manager.applescript"
-if grep -Fq 'Uninstall.command' "$work_dir/manager.applescript"; then
+if grep -Eiq 'uninstall(\.sh|\.command)' "$work_dir/manager.applescript"; then
   echo 'The setup app must not contain the uninstall action.' >&2
   exit 1
 fi
-[[ -x "$uninstall_app/Contents/MacOS/applet" ]]
-[[ "$(plutil -extract CFBundleIdentifier raw -o - "$uninstall_app/Contents/Info.plist")" == 'com.laserjet1020mackit.uninstaller' ]]
-codesign --verify --deep --strict "$uninstall_app"
-cmp "$project_dir/Uninstall.command" "$uninstall_app/Contents/Resources/Uninstall.command"
-[[ -s "$uninstall_app/Contents/Resources/LICENSE" ]]
-osadecompile "$uninstall_app/Contents/Resources/Scripts/main.scpt" > "$work_dir/uninstaller.applescript"
-grep -Fq 'with administrator privileges' "$work_dir/uninstaller.applescript"
-grep -Fq 'Uninstall.command' "$work_dir/uninstaller.applescript"
+[[ ! -e "$legacy_uninstall_app" ]]
+[[ ! -e "$payload/Application Support/LaserJet1020MacKit/Uninstall.command" ]]
+cmp "$project_dir/uninstall.sh" "$uninstaller"
+cmp "$project_dir/package-scripts/postinstall" "$work_dir/expanded/Scripts/postinstall"
 [[ -s "$ppd" ]]
 gzip -dc "$ppd" > "$work_dir/driver.ppd"
 grep -Fq '*NickName: "HP LaserJet 1020 (Mac Kit)"' "$work_dir/driver.ppd"
@@ -58,10 +54,11 @@ if grep -Fq '/Library/Printers/hp/laserjet/hplaserjetzjs.bundle' "$work_dir/driv
 fi
 grep -Fq 'identifier="com.laserjet1020mackit.driver"' "$work_dir/expanded/PackageInfo"
 if grep -Fq '<relocate>' "$work_dir/expanded/PackageInfo"; then
-  echo 'Applications must stay at their installed paths for the uninstaller.' >&2
+  echo 'The setup app must stay at its installed path.' >&2
   exit 1
 fi
 "$uninstaller" --dry-run > "$work_dir/uninstall-preview"
 grep -Fq '/Applications/LaserJet 1020 Mac Kit.app' "$work_dir/uninstall-preview"
 grep -Fq '/Applications/Uninstall LaserJet 1020 Mac Kit.app' "$work_dir/uninstall-preview"
+grep -Fq 'com.laserjet1020mackit.uninstaller' "$work_dir/uninstall-preview"
 echo 'Package smoke test passed.'

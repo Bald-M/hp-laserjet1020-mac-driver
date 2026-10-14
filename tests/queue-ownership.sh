@@ -2,8 +2,8 @@
 set -euo pipefail
 
 project_dir="$(cd "$(dirname "$0")/.." && pwd -P)"
-# shellcheck source=Uninstall.command
-source "$project_dir/Uninstall.command"
+# shellcheck source=uninstall.sh
+source "$project_dir/uninstall.sh"
 work_dir="$(mktemp -d "${TMPDIR:-/tmp/}laserjet1020-queue.XXXXXX")"
 trap 'rm -rf "$work_dir"' EXIT
 ppd_file="$work_dir/HP_LaserJet_1020_MacKit.ppd"

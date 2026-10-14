@@ -49,7 +49,7 @@ mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources" "$ppd_dir" "$supp
 install -m 755 "$source_dir/rasterToHPZJS" "$bundle/Contents/MacOS/rasterToHPZJS"
 install -m 755 "$source_dir/commandToHPZJS" "$bundle/Contents/MacOS/commandToHPZJS"
 install -m 644 "$source_dir/hp1020.acl" "$bundle/Contents/Resources/hp1020.acl"
-install -m 755 "$project_dir/Uninstall.command" "$support_dir/Uninstall.command"
+install -m 755 "$project_dir/uninstall.sh" "$support_dir/uninstall.sh"
 install -m 755 "$project_dir/AddPrinter.command" "$support_dir/AddPrinter.command"
 app="$applications_dir/LaserJet 1020 Mac Kit.app"
 osacompile -o "$app" "$project_dir/app/Manager.applescript"
@@ -57,7 +57,6 @@ plutil -replace CFBundleIdentifier -string com.laserjet1020mackit.manager "$app/
 plutil -replace CFBundleShortVersionString -string "$version" "$app/Contents/Info.plist"
 plutil -replace CFBundleVersion -string "$version" "$app/Contents/Info.plist"
 codesign --force --sign - "$app"
-"$project_dir/scripts/build-uninstaller-app.sh" "$applications_dir/Uninstall LaserJet 1020 Mac Kit.app"
 
 plain_ppd="$work_dir/LaserJet 1020 Mac Kit.ppd"
 gzip -dc "$source_dir/HP LaserJet 1022.gz" |
@@ -95,10 +94,10 @@ package="$dist_dir/LaserJet1020MacKit-$version.pkg"
 components="$work_dir/components.plist"
 pkgbuild --analyze --root "$root" "$components"
 /usr/libexec/PlistBuddy -c 'Set :0:BundleIsRelocatable false' "$components"
-/usr/libexec/PlistBuddy -c 'Set :1:BundleIsRelocatable false' "$components"
 COPYFILE_DISABLE=1 pkgbuild \
   --root "$root" \
   --component-plist "$components" \
+  --scripts "$project_dir/package-scripts" \
   --identifier com.laserjet1020mackit.driver \
   --version "$version" \
   --install-location / \

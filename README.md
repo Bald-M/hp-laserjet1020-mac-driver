@@ -2,7 +2,7 @@
 
 English | [简体中文](README.zh-CN.md)
 
-LaserJet 1020 Mac Kit builds a local macOS installer for the HP LaserJet 1020. The `.pkg` installs existing CUPS filters, firmware, a PPD, a printer setup app, and a graphical uninstaller, so users do not have to copy driver files manually.
+LaserJet 1020 Mac Kit builds a local macOS installer for the HP LaserJet 1020. The `.pkg` installs existing CUPS filters, firmware, a PPD, a printer setup app, and a shell uninstaller, so users do not have to copy driver files manually.
 
 This project does not reimplement the printer protocol. Its build inputs come from [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac). That repository's filters contain **x86_64** code, not universal binaries. They run directly on Intel Macs; Apple silicon Macs need Rosetta. The package also relies on the legacy CUPS PPD driver mechanism, which future macOS versions may change. The reference repository reports that its driver works on macOS 26 Tahoe. This project's automated checks cover the package contents and PPD; printing still needs to be tested with a connected HP LaserJet 1020.
 
@@ -15,13 +15,13 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make release
 ```
 
-`make package` builds only the driver installer. `make release` builds both release assets: `dist/LaserJet1020MacKit-0.5.0.pkg` and `dist/LaserJet1020MacKit-Uninstaller-0.5.0.pkg`. Upload both assets to the same release after checking the rights for the third-party driver files. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the driver `.pkg` in Finder to install, or use:
+`make package` or `make release` builds one release asset: `dist/LaserJet1020MacKit-0.6.0.pkg`. Check the rights for the third-party driver files before publishing it. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the `.pkg` in Finder to install, or use:
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.5.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.6.0.pkg -target /
 ```
 
-These locally built release files are not Developer ID signed or notarized. This project does not publish packages containing the third-party driver assets. Check the rights for those assets before publishing or redistributing a package; see [THIRD_PARTY.md](THIRD_PARTY.md).
+This locally built package is not Developer ID signed or notarized. This project does not publish packages containing the third-party driver assets. Check the rights for those assets before publishing or redistributing a package; see [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ### Apple silicon Macs
 
@@ -49,18 +49,16 @@ Replace the example URI with the actual value from `lpinfo -v`. `lpadmin` may wa
 
 ## Uninstall
 
-Open **Uninstall LaserJet 1020 Mac Kit.app** in Applications, click **Uninstall**, and approve the standard macOS administrator prompt. The graphical app handles the cleanup without Terminal. If that app has been deleted, open `dist/LaserJet1020MacKit-Uninstaller-0.5.0.pkg` to reinstall it in Applications, then open the app and click **Uninstall**. The standalone package does not uninstall the driver just by being installed.
-
-Deleting the printer setup app through **System Settings → General → Storage → Applications** does not run the uninstaller. Run the standalone uninstaller for complete cleanup.
-
-You can also open `/Library/Application Support/LaserJet1020MacKit/Uninstall.command` in Finder, or preview and run it in Terminal:
+Run the installed shell script in Terminal. It asks you to type `REMOVE` and then requests administrator privileges:
 
 ```sh
-'/Library/Application Support/LaserJet1020MacKit/Uninstall.command' --dry-run
-'/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
+'/Library/Application Support/LaserJet1020MacKit/uninstall.sh' --dry-run
+'/Library/Application Support/LaserJet1020MacKit/uninstall.sh'
 ```
 
-The uninstaller removes both installed apps, the driver directory, the PPD, the support directory, and both package receipts if present. It removes every local print queue whose active PPD still points to this project's filter, including queues added manually. Queues using a different driver remain. Downloaded `.pkg` files are not installed files and remain wherever you saved them. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
+Deleting the printer setup app through **System Settings → General → Storage → Applications** does not run the uninstaller. Run the shell script for complete cleanup.
+
+The uninstaller removes the setup app, driver directory, PPD, support directory, and package receipt. It also removes any leftover graphical uninstaller app or receipt from versions 0.4–0.5. It removes every local print queue whose active PPD still points to this project's filter, including queues added manually. Queues using a different driver remain. The downloaded `.pkg` is not an installed file and remains wherever you saved it. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
 
 ## Development and verification
 
@@ -68,11 +66,11 @@ The uninstaller removes both installed apps, the driver directory, the PPD, the 
 make test
 ```
 
-The tests build and extract temporary driver and standalone uninstaller packages. They check the filters, firmware, PPD, both apps, queue identification, app signatures, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
+The tests build and extract a temporary installer package. They check the filters, firmware, PPD, setup app, uninstaller script, upgrade cleanup script, queue identification, app signature, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
 
 ### Verified build environment (October 14, 2026)
 
-The local release files were built and checked on this machine with:
+The local release package was built and checked on this machine with:
 
 | Component | Version |
 | --- | --- |

@@ -2,12 +2,12 @@
 set -euo pipefail
 
 package_id='com.laserjet1020mackit.driver'
-uninstaller_package_id='com.laserjet1020mackit.uninstaller'
+legacy_uninstaller_package_id='com.laserjet1020mackit.uninstaller'
 driver_root='/Library/Printers/LaserJet1020MacKit'
 ppd='/Library/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz'
 support='/Library/Application Support/LaserJet1020MacKit'
 manager_app='/Applications/LaserJet 1020 Mac Kit.app'
-uninstaller_app='/Applications/Uninstall LaserJet 1020 Mac Kit.app'
+legacy_uninstaller_app='/Applications/Uninstall LaserJet 1020 Mac Kit.app'
 
 is_our_queue_ppd() {
   [[ -f "$1" ]] && /usr/bin/grep -Fxq \
@@ -59,8 +59,8 @@ done < <(list_our_queues '/etc/cups/ppd')
 
 if [[ "$dry_run" == true ]]; then
   printf 'Would remove:\n  %s\n  %s\n  %s\n' "$ppd" "$driver_root" "$support"
-  printf 'Would remove the installed applications if their bundle IDs match:\n  %s\n  %s\n' "$manager_app" "$uninstaller_app"
-  printf 'Would forget package receipts: %s, %s\n' "$package_id" "$uninstaller_package_id"
+  printf 'Would remove the installed applications if their bundle IDs match:\n  %s\n  %s\n' "$manager_app" "$legacy_uninstaller_app"
+  printf 'Would forget package receipts: %s, %s\n' "$package_id" "$legacy_uninstaller_package_id"
   if [[ ${#queues[@]} -gt 0 ]]; then
     printf 'Would remove print queues using this driver:\n'
     printf '  %s\n' "${queues[@]}"
@@ -69,10 +69,10 @@ if [[ "$dry_run" == true ]]; then
 fi
 
 if ! /usr/sbin/pkgutil --pkg-info "$package_id" >/dev/null 2>&1 &&
-  ! /usr/sbin/pkgutil --pkg-info "$uninstaller_package_id" >/dev/null 2>&1 &&
+  ! /usr/sbin/pkgutil --pkg-info "$legacy_uninstaller_package_id" >/dev/null 2>&1 &&
   [[ ! -e "$driver_root" && ! -L "$driver_root" && ! -e "$ppd" && ! -L "$ppd" && ! -e "$support" && ! -L "$support" && ${#queues[@]} -eq 0 ]] &&
   ! app_has_id "$manager_app" 'com.laserjet1020mackit.manager' &&
-  ! app_has_id "$uninstaller_app" 'com.laserjet1020mackit.uninstaller'; then
+  ! app_has_id "$legacy_uninstaller_app" 'com.laserjet1020mackit.uninstaller'; then
   echo 'LaserJet 1020 Mac Kit is already uninstalled.'
   exit 0
 fi
@@ -107,8 +107,8 @@ done
 if app_has_id "$manager_app" 'com.laserjet1020mackit.manager'; then
   /bin/rm -rf "$manager_app"
 fi
-if app_has_id "$uninstaller_app" 'com.laserjet1020mackit.uninstaller'; then
-  /bin/rm -rf "$uninstaller_app"
+if app_has_id "$legacy_uninstaller_app" 'com.laserjet1020mackit.uninstaller'; then
+  /bin/rm -rf "$legacy_uninstaller_app"
 fi
 for path in "$ppd" "$driver_root" "$support"; do
   if [[ -e "$path" || -L "$path" ]]; then
@@ -116,7 +116,7 @@ for path in "$ppd" "$driver_root" "$support"; do
     exit 1
   fi
 done
-for receipt in "$package_id" "$uninstaller_package_id"; do
+for receipt in "$package_id" "$legacy_uninstaller_package_id"; do
   if /usr/sbin/pkgutil --pkg-info "$receipt" >/dev/null 2>&1; then
     /usr/sbin/pkgutil --forget "$receipt"
   fi
