@@ -1,37 +1,39 @@
 # LaserJet 1020 Mac Kit
 
-为 HP LaserJet 1020 准备的 macOS 本地安装包构建工具。它把现有的 CUPS 过滤程序、固件、PPD 和管理 App 放进一个 `.pkg`，省去手动复制文件。项目名为 **LaserJet 1020 Mac Kit**。
+LaserJet 1020 Mac Kit builds a local macOS installer for the HP LaserJet 1020. The `.pkg` installs existing CUPS filters, firmware, a PPD, and a manager app, so users do not have to copy driver files manually.
 
-本项目没有重新实现打印协议。构建输入来自 [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac)，该仓库的过滤程序是 **x86_64**，并非通用架构。Intel Mac 可直接运行；Apple 芯片 Mac 需要 Rosetta。当前方案依赖传统 CUPS PPD 驱动机制，未来 macOS 版本可能改变支持情况。参考仓库报告在 macOS 26 Tahoe 上工作；本项目的自动验证只覆盖安装包内容与 PPD，实际打印仍需在连接打印机的 Mac 上确认。
+This project does not reimplement the printer protocol. Its build inputs come from [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac). That repository's filters contain **x86_64** code, not universal binaries. They run directly on Intel Macs; Apple silicon Macs need Rosetta. The package also relies on the legacy CUPS PPD driver mechanism, which future macOS versions may change. The reference repository reports that its driver works on macOS 26 Tahoe. This project's automated checks cover the package contents and PPD; printing still needs to be tested with a connected HP LaserJet 1020.
 
-## 获取并构建安装包
+## Build the installer
 
-需要 macOS、Xcode Command Line Tools（提供 `pkgbuild`、`lipo` 等工具）和网络连接。在项目目录执行一条命令即可下载固定版本的参考文件并构建：
+You need macOS, Xcode Command Line Tools (for `pkgbuild` and `lipo`), and network access. From the project directory, run:
 
 ```sh
 cd "$HOME/Code/laserjet1020-mac-kit"
 make package
 ```
 
-下载内容保存在忽略版本控制的 `build/upstream/`。如果已有参考仓库的本地副本，或需要离线构建，可运行 `make package SOURCE_DIR=/path/to/hp1020-driver-mac`。输出是 `dist/LaserJet1020MacKit-0.3.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
+The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make package SOURCE_DIR=/path/to/hp1020-driver-mac`. The output is `dist/LaserJet1020MacKit-0.3.0.pkg`. Open it in Finder to install, or use:
 
 ```sh
 sudo installer -pkg dist/LaserJet1020MacKit-0.3.0.pkg -target /
 ```
 
-此安装包由本机生成，未签名、未公证。项目不提供包含第三方驱动资源的公开发行包；发布或再分发前请自行确认这些资源的授权，见 [THIRD_PARTY.md](THIRD_PARTY.md)。
+The locally built installer is not signed or notarized for distribution. This project does not publish packages containing the third-party driver assets. Check the rights for those assets before publishing or redistributing a package; see [THIRD_PARTY.md](THIRD_PARTY.md).
 
-### Apple 芯片 Mac
+### Apple silicon Macs
 
-在安装前按 [Apple 的说明](https://support.apple.com/en-hk/102527)安装 Rosetta：
+Install Rosetta before installing the driver, following [Apple's instructions](https://support.apple.com/en-hk/102527):
 
 ```sh
 softwareupdate --install-rosetta
 ```
 
-## 添加打印机
+## Add the printer
 
-安装包会将 **LaserJet 1020 Mac Kit.app** 放进“应用程序”。打开它可以选择添加打印机或卸载驱动；它会打开对应的终端工具。安装包不会自动创建打印队列。连接并开启 HP LaserJet 1020 后，在 App 中选择“添加打印机”，选择检测到的 USB 设备并输入管理员密码，即可创建独立打印队列。也可以在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/AddPrinter.command`，或在“系统设置 → 打印机与扫描仪”中添加打印机并选择 **HP LaserJet 1020 (Mac Kit)**。如果系统没有列出该驱动，可以用 CUPS 命令查看设备 URI 并添加：
+The installer places **LaserJet 1020 Mac Kit.app** in Applications. Open it to launch the printer setup or uninstall tool in Terminal. The installer does not create a print queue automatically.
+
+Connect and turn on the HP LaserJet 1020, then open the app and choose **添加打印机** (Add Printer). Select the detected USB device and enter an administrator password to create a dedicated print queue. You can also open `/Library/Application Support/LaserJet1020MacKit/AddPrinter.command` in Finder, or add the printer through **System Settings → Printers & Scanners** using **HP LaserJet 1020 (Mac Kit)** as its driver. If the driver is not listed, find the device URI and add the queue with CUPS:
 
 ```sh
 lpinfo -v | grep -i usb
@@ -41,27 +43,29 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
   -D 'HP LaserJet 1020 (Mac Kit)'
 ```
 
-将示例 URI 换成 `lpinfo -v` 的实际输出。`lpadmin` 可能提示 PPD 驱动已弃用，这是 CUPS 对传统驱动的提示。添加工具创建的队列名为 `HP_LaserJet_1020_MacKit`；上方手动命令创建的队列名为 `HP_LaserJet_1020`。打印测试页或 PDF 后，用 `lpstat -p <队列名>` 检查对应队列。
+Replace the example URI with the actual value from `lpinfo -v`. `lpadmin` may warn that PPD drivers are deprecated; this is a CUPS warning about legacy drivers. The setup tool creates a queue named `HP_LaserJet_1020_MacKit`; the manual command above creates `HP_LaserJet_1020`. After printing a test page or PDF, check the queue with `lpstat -p <queue-name>`.
 
-## 卸载
+## Uninstall
 
-在“应用程序”中打开 **LaserJet 1020 Mac Kit.app**，选择“卸载驱动”，然后在终端按提示输入 `REMOVE` 和管理员密码。直接在“系统设置 → 通用 → 储存空间 → 应用程序”中删除这个 App，只会移除 App，不会卸载打印驱动。也可以在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/Uninstall.command`，或在终端预览和执行：
+Open **LaserJet 1020 Mac Kit.app** in Applications and choose **卸载驱动** (Uninstall Driver). In Terminal, type `REMOVE` and enter an administrator password when prompted. Deleting the app from **System Settings → General → Storage → Applications** removes only the app, not the printer driver.
+
+You can also open `/Library/Application Support/LaserJet1020MacKit/Uninstall.command` in Finder, or preview and run it in Terminal:
 
 ```sh
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command' --dry-run
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
 ```
 
-卸载工具删除本项目安装的 App、驱动文件和包收据；如果添加工具创建的队列仍使用本项目 PPD，也会移除该队列。手动创建或已改用其他 PPD 的队列会保留，可在“系统设置 → 打印机与扫描仪”中移除。安装包使用独立目录，不覆盖参考仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
+The uninstaller removes this project's app, driver files, and package receipt. It also removes the queue created by the setup tool if that queue still uses this project's PPD. Manually created queues and queues switched to a different PPD remain; remove them in **System Settings → Printers & Scanners** if needed. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
 
-## 开发与验证
+## Development and verification
 
 ```sh
 make test
 ```
 
-测试会构建临时安装包、解开 payload，核对程序、固件、PPD、管理 App、卸载工具和 PPD 中的路径。它不会执行系统安装，也不代表完成了真实打印测试。
+The tests build and extract a temporary package, then check its filters, firmware, PPD, manager app, uninstaller, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
 
-## 许可证与来源
+## License and provenance
 
-本项目自行编写的脚本和文档采用 [MIT License](LICENSE)。参考仓库的过滤程序、固件和 PPD **不在本项目 MIT 授权范围内**，也没有提交到本仓库。参考文件的版权与来源见 [THIRD_PARTY.md](THIRD_PARTY.md)。本项目与 HP、Apple 无关联。
+The scripts and documentation written for this project are licensed under the [MIT License](LICENSE). The reference repository's filters, firmware, and PPD are **not covered by this project's MIT license** and are not committed to this repository. See [THIRD_PARTY.md](THIRD_PARTY.md) for their provenance and rights. This project is not affiliated with HP or Apple.
