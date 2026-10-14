@@ -52,7 +52,6 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 在“终端”中运行安装好的 shell 脚本。脚本会要求输入 `REMOVE` 确认，然后申请管理员权限：
 
 ```sh
-'/Library/Application Support/LaserJet1020MacKit/uninstall.sh' --dry-run
 '/Library/Application Support/LaserJet1020MacKit/uninstall.sh'
 ```
 
