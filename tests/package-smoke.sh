@@ -21,11 +21,19 @@ bundle="$payload/Printers/LaserJet1020MacKit/LaserJet1020.bundle"
 ppd="$payload/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz"
 uninstaller="$payload/Application Support/LaserJet1020MacKit/Uninstall.command"
 add_printer="$payload/Application Support/LaserJet1020MacKit/AddPrinter.command"
+app="$work_dir/payload/Applications/LaserJet 1020 Mac Kit.app"
 [[ -x "$bundle/Contents/MacOS/rasterToHPZJS" ]]
 [[ -x "$bundle/Contents/MacOS/commandToHPZJS" ]]
 [[ -s "$bundle/Contents/Resources/hp1020.acl" ]]
 [[ -x "$uninstaller" ]]
 [[ -x "$add_printer" ]]
+[[ -x "$app/Contents/MacOS/applet" ]]
+[[ "$(plutil -extract CFBundleIdentifier raw -o - "$app/Contents/Info.plist")" == 'com.laserjet1020mackit.manager' ]]
+[[ "$(plutil -extract CFBundleShortVersionString raw -o - "$app/Contents/Info.plist")" == "$(cat "$project_dir/VERSION")" ]]
+codesign --verify --deep --strict "$app"
+osadecompile "$app/Contents/Resources/Scripts/main.scpt" > "$work_dir/manager.applescript"
+grep -Fq 'AddPrinter.command' "$work_dir/manager.applescript"
+grep -Fq 'Uninstall.command' "$work_dir/manager.applescript"
 [[ -s "$ppd" ]]
 gzip -dc "$ppd" > "$work_dir/driver.ppd"
 grep -Fq '*NickName: "HP LaserJet 1020 (Mac Kit)"' "$work_dir/driver.ppd"
@@ -37,5 +45,9 @@ if grep -Fq '/Library/Printers/hp/laserjet/hplaserjetzjs.bundle' "$work_dir/driv
   exit 1
 fi
 grep -Fq 'identifier="com.laserjet1020mackit.driver"' "$work_dir/expanded/PackageInfo"
-"$uninstaller" --dry-run >/dev/null
+if grep -Fq '<relocate>' "$work_dir/expanded/PackageInfo"; then
+  echo 'Manager app must stay at its installed path for the uninstaller.' >&2
+  exit 1
+fi
+"$uninstaller" --dry-run | grep -Fq '/Applications/LaserJet 1020 Mac Kit.app'
 echo 'Package smoke test passed.'

@@ -9,7 +9,7 @@ if [[ -z "$source_dir" || $# -ne 1 ]]; then
 fi
 source_dir="$(cd "$source_dir" && pwd -P)"
 
-for tool in pkgbuild lipo gzip sed grep; do
+for tool in pkgbuild lipo gzip sed grep osacompile plutil codesign; do
   command -v "$tool" >/dev/null || { echo "Missing macOS tool: $tool" >&2; exit 1; }
 done
 
@@ -43,13 +43,20 @@ root="$work_dir/root"
 bundle="$root$new_bundle"
 ppd_dir="$root/Library/Printers/PPDs/Contents/Resources"
 support_dir="$root/Library/Application Support/LaserJet1020MacKit"
-mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources" "$ppd_dir" "$support_dir"
+applications_dir="$root/Applications"
+mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources" "$ppd_dir" "$support_dir" "$applications_dir"
 
 install -m 755 "$source_dir/rasterToHPZJS" "$bundle/Contents/MacOS/rasterToHPZJS"
 install -m 755 "$source_dir/commandToHPZJS" "$bundle/Contents/MacOS/commandToHPZJS"
 install -m 644 "$source_dir/hp1020.acl" "$bundle/Contents/Resources/hp1020.acl"
 install -m 755 "$project_dir/Uninstall.command" "$support_dir/Uninstall.command"
 install -m 755 "$project_dir/AddPrinter.command" "$support_dir/AddPrinter.command"
+app="$applications_dir/LaserJet 1020 Mac Kit.app"
+osacompile -o "$app" "$project_dir/app/Manager.applescript"
+plutil -replace CFBundleIdentifier -string com.laserjet1020mackit.manager "$app/Contents/Info.plist"
+plutil -replace CFBundleShortVersionString -string "$version" "$app/Contents/Info.plist"
+plutil -replace CFBundleVersion -string "$version" "$app/Contents/Info.plist"
+codesign --force --sign - "$app"
 
 plain_ppd="$work_dir/LaserJet 1020 Mac Kit.ppd"
 gzip -dc "$source_dir/HP LaserJet 1022.gz" |
@@ -84,8 +91,12 @@ dist_dir="${DIST_DIR:-$project_dir/dist}"
 mkdir -p "$dist_dir"
 dist_dir="$(cd "$dist_dir" && pwd -P)"
 package="$dist_dir/LaserJet1020MacKit-$version.pkg"
+components="$work_dir/components.plist"
+pkgbuild --analyze --root "$root" "$components"
+/usr/libexec/PlistBuddy -c 'Set :0:BundleIsRelocatable false' "$components"
 COPYFILE_DISABLE=1 pkgbuild \
   --root "$root" \
+  --component-plist "$components" \
   --identifier com.laserjet1020mackit.driver \
   --version "$version" \
   --install-location / \

@@ -1,6 +1,6 @@
 # LaserJet 1020 Mac Kit
 
-为 HP LaserJet 1020 准备的 macOS 本地安装包构建工具。它把现有的 CUPS 过滤程序、固件和 PPD 放进一个 `.pkg`，并附带卸载工具，省去手动复制文件。项目名为 **LaserJet 1020 Mac Kit**。
+为 HP LaserJet 1020 准备的 macOS 本地安装包构建工具。它把现有的 CUPS 过滤程序、固件、PPD 和管理 App 放进一个 `.pkg`，省去手动复制文件。项目名为 **LaserJet 1020 Mac Kit**。
 
 本项目没有重新实现打印协议。构建输入来自 [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac)，该仓库的过滤程序是 **x86_64**，并非通用架构。Intel Mac 可直接运行；Apple 芯片 Mac 需要 Rosetta。当前方案依赖传统 CUPS PPD 驱动机制，未来 macOS 版本可能改变支持情况。参考仓库报告在 macOS 26 Tahoe 上工作；本项目的自动验证只覆盖安装包内容与 PPD，实际打印仍需在连接打印机的 Mac 上确认。
 
@@ -13,10 +13,10 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make package
 ```
 
-下载内容保存在忽略版本控制的 `build/upstream/`。如果已有参考仓库的本地副本，或需要离线构建，可运行 `make package SOURCE_DIR=/path/to/hp1020-driver-mac`。输出是 `dist/LaserJet1020MacKit-0.2.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
+下载内容保存在忽略版本控制的 `build/upstream/`。如果已有参考仓库的本地副本，或需要离线构建，可运行 `make package SOURCE_DIR=/path/to/hp1020-driver-mac`。输出是 `dist/LaserJet1020MacKit-0.3.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.2.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.3.0.pkg -target /
 ```
 
 此安装包由本机生成，未签名、未公证。项目不提供包含第三方驱动资源的公开发行包；发布或再分发前请自行确认这些资源的授权，见 [THIRD_PARTY.md](THIRD_PARTY.md)。
@@ -31,7 +31,7 @@ softwareupdate --install-rosetta
 
 ## 添加打印机
 
-安装包只安装驱动文件，不自动创建打印队列。连接并开启 HP LaserJet 1020 后，在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/AddPrinter.command`；选择检测到的 USB 设备并输入管理员密码，即可创建独立打印队列。也可以在“系统设置 → 打印机与扫描仪”中添加打印机，并选择 **HP LaserJet 1020 (Mac Kit)**。如果系统没有列出该驱动，可以用 CUPS 命令查看设备 URI 并添加：
+安装包会将 **LaserJet 1020 Mac Kit.app** 放进“应用程序”。打开它可以选择添加打印机或卸载驱动；它会打开对应的终端工具。安装包不会自动创建打印队列。连接并开启 HP LaserJet 1020 后，在 App 中选择“添加打印机”，选择检测到的 USB 设备并输入管理员密码，即可创建独立打印队列。也可以在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/AddPrinter.command`，或在“系统设置 → 打印机与扫描仪”中添加打印机并选择 **HP LaserJet 1020 (Mac Kit)**。如果系统没有列出该驱动，可以用 CUPS 命令查看设备 URI 并添加：
 
 ```sh
 lpinfo -v | grep -i usb
@@ -45,14 +45,14 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 
 ## 卸载
 
-安装后在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/Uninstall.command`，按提示输入 `REMOVE` 和管理员密码。也可以在终端预览或执行：
+在“应用程序”中打开 **LaserJet 1020 Mac Kit.app**，选择“卸载驱动”，然后在终端按提示输入 `REMOVE` 和管理员密码。直接在“系统设置 → 通用 → 储存空间 → 应用程序”中删除这个 App，只会移除 App，不会卸载打印驱动。也可以在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/Uninstall.command`，或在终端预览和执行：
 
 ```sh
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command' --dry-run
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
 ```
 
-卸载工具删除本项目安装的文件和包收据；如果添加工具创建的队列仍使用本项目 PPD，也会移除该队列。手动创建或已改用其他 PPD 的队列会保留，可在“系统设置 → 打印机与扫描仪”中移除。安装包使用独立目录，不覆盖参考仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
+卸载工具删除本项目安装的 App、驱动文件和包收据；如果添加工具创建的队列仍使用本项目 PPD，也会移除该队列。手动创建或已改用其他 PPD 的队列会保留，可在“系统设置 → 打印机与扫描仪”中移除。安装包使用独立目录，不覆盖参考仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
 
 ## 开发与验证
 
@@ -60,7 +60,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 make test
 ```
 
-测试会构建临时安装包、解开 payload，核对程序、固件、PPD、卸载工具和 PPD 中的路径。它不会执行系统安装，也不代表完成了真实打印测试。
+测试会构建临时安装包、解开 payload，核对程序、固件、PPD、管理 App、卸载工具和 PPD 中的路径。它不会执行系统安装，也不代表完成了真实打印测试。
 
 ## 许可证与来源
 

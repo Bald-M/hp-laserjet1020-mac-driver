@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-10-14
+
+- Added a manager app in Applications to open the printer setup and driver uninstaller tools.
+- Made the uninstaller remove the manager app when it belongs to this project.
+
 ## 0.2.0 — 2026-10-14
 
 - Added a guided USB printer queue setup tool with vendor and model matching.

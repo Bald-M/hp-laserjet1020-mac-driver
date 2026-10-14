@@ -5,6 +5,7 @@ package_id='com.laserjet1020mackit.driver'
 bundle='/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle'
 ppd='/Library/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz'
 support='/Library/Application Support/LaserJet1020MacKit'
+app='/Applications/LaserJet 1020 Mac Kit.app'
 queue='HP_LaserJet_1020_MacKit'
 queue_ppd="/etc/cups/ppd/$queue.ppd"
 files=(
@@ -46,6 +47,7 @@ fi
 if [[ "$dry_run" == true ]]; then
   printf 'Would remove:\n'
   printf '  %s\n' "${files[@]}"
+  echo "Would remove application: $app"
   echo "Would forget receipt: $package_id"
   echo "Would remove $queue if its PPD still identifies this kit."
   echo 'Other printer queues would remain.'
@@ -85,6 +87,10 @@ for path in "${files[@]}"; do
     /bin/rm -f "$path"
   fi
 done
+if [[ -d "$app" && ! -L "$app" ]] &&
+  [[ "$(/usr/bin/plutil -extract CFBundleIdentifier raw -o - "$app/Contents/Info.plist" 2>/dev/null)" == 'com.laserjet1020mackit.manager' ]]; then
+  /bin/rm -rf "$app"
+fi
 for path in \
   "$bundle/Contents/MacOS" \
   "$bundle/Contents/Resources" \
