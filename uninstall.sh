@@ -9,16 +9,16 @@ support='/Library/Application Support/LaserJet1020MacKit'
 manager_app='/Applications/LaserJet 1020 Mac Kit.app'
 legacy_uninstaller_app='/Applications/Uninstall LaserJet 1020 Mac Kit.app'
 
-is_our_queue_ppd() {
+ppd_uses_kit_filter() {
   [[ -f "$1" ]] && /usr/bin/grep -Fxq \
     '*cupsFilter: "application/vnd.cups-raster 100 /Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS"' "$1"
 }
 
-list_our_queues() {
+list_dependent_queues() {
   local ppd_directory="$1" ppd_file queue_name
   for ppd_file in "$ppd_directory"/*.ppd; do
     [[ -f "$ppd_file" && ! -L "$ppd_file" ]] || continue
-    if is_our_queue_ppd "$ppd_file"; then
+    if ppd_uses_kit_filter "$ppd_file"; then
       queue_name="${ppd_file##*/}"
       printf '%s\n' "${queue_name%.ppd}"
     fi
@@ -55,22 +55,25 @@ fi
 queues=()
 while IFS= read -r queue_name; do
   queues+=("$queue_name")
-done < <(list_our_queues '/etc/cups/ppd')
+done < <(list_dependent_queues '/etc/cups/ppd')
+
+if [[ ${#queues[@]} -gt 0 ]]; then
+  printf 'Uninstall blocked: these print queues still use this driver:\n' >&2
+  printf '  %s\n' "${queues[@]}" >&2
+  echo 'No queues or driver files were removed. Change or remove these queues in Printers & Scanners, then retry.' >&2
+  exit 1
+fi
 
 if [[ "$dry_run" == true ]]; then
   printf 'Would remove:\n  %s\n  %s\n  %s\n' "$ppd" "$driver_root" "$support"
   printf 'Would remove the installed applications if their bundle IDs match:\n  %s\n  %s\n' "$manager_app" "$legacy_uninstaller_app"
   printf 'Would forget package receipts: %s, %s\n' "$package_id" "$legacy_uninstaller_package_id"
-  if [[ ${#queues[@]} -gt 0 ]]; then
-    printf 'Would remove print queues using this driver:\n'
-    printf '  %s\n' "${queues[@]}"
-  fi
   exit 0
 fi
 
 if ! /usr/sbin/pkgutil --pkg-info "$package_id" >/dev/null 2>&1 &&
   ! /usr/sbin/pkgutil --pkg-info "$legacy_uninstaller_package_id" >/dev/null 2>&1 &&
-  [[ ! -e "$driver_root" && ! -L "$driver_root" && ! -e "$ppd" && ! -L "$ppd" && ! -e "$support" && ! -L "$support" && ${#queues[@]} -eq 0 ]] &&
+  [[ ! -e "$driver_root" && ! -L "$driver_root" && ! -e "$ppd" && ! -L "$ppd" && ! -e "$support" && ! -L "$support" ]] &&
   ! app_has_id "$manager_app" 'com.laserjet1020mackit.manager' &&
   ! app_has_id "$legacy_uninstaller_app" 'com.laserjet1020mackit.uninstaller'; then
   echo 'LaserJet 1020 Mac Kit is already uninstalled.'
@@ -78,7 +81,7 @@ if ! /usr/sbin/pkgutil --pkg-info "$package_id" >/dev/null 2>&1 &&
 fi
 
 if [[ "$assume_yes" != true ]]; then
-  echo 'Remove LaserJet 1020 Mac Kit, its installed files, and print queues using this driver?'
+  echo 'Remove LaserJet 1020 Mac Kit and its installed files?'
   read -r -p 'Type REMOVE to continue: ' answer
   [[ "$answer" == REMOVE ]] || { echo 'Cancelled.'; exit 1; }
 fi
@@ -90,17 +93,6 @@ if [[ $EUID -ne 0 ]]; then
   fi
   exec /usr/bin/sudo /bin/bash "$0" --yes
 fi
-
-for queue_name in "${queues[@]}"; do
-  if ! /usr/bin/lpstat -p "$queue_name" >/dev/null 2>&1; then
-    echo "Could not verify print queue $queue_name with CUPS; no driver files were removed." >&2
-    exit 1
-  fi
-done
-for queue_name in "${queues[@]}"; do
-  /usr/sbin/lpadmin -x "$queue_name"
-  echo "Removed print queue: $queue_name"
-done
 
 /bin/rm -f "$ppd"
 /bin/rm -rf "$driver_root" "$support"

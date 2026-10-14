@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 — 2026-10-14
+
+- Stop uninstallation before making changes if any print queue still uses this kit's driver, preserving manually added SMB and other queues.
+
 ## 0.6.0 — 2026-10-14
 
 - Reduced the local release to one driver installer `.pkg`.

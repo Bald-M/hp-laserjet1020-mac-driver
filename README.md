@@ -15,10 +15,10 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make release
 ```
 
-`make package` or `make release` builds one release asset: `dist/LaserJet1020MacKit-0.6.0.pkg`. Check the rights for the third-party driver files before publishing it. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the `.pkg` in Finder to install, or use:
+`make package` or `make release` builds one release asset: `dist/LaserJet1020MacKit-0.6.1.pkg`. Check the rights for the third-party driver files before publishing it. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the `.pkg` in Finder to install, or use:
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.6.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.6.1.pkg -target /
 ```
 
 This locally built package is not Developer ID signed or notarized. This project does not publish packages containing the third-party driver assets. Check the rights for those assets before publishing or redistributing a package; see [THIRD_PARTY.md](THIRD_PARTY.md).
@@ -58,7 +58,9 @@ Run the installed shell script in Terminal. It asks you to type `REMOVE` and the
 
 Deleting the printer setup app through **System Settings → General → Storage → Applications** does not run the uninstaller. Run the shell script for complete cleanup.
 
-The uninstaller removes the setup app, driver directory, PPD, support directory, and package receipt. It also removes any leftover graphical uninstaller app or receipt from versions 0.4–0.5. It removes every local print queue whose active PPD still points to this project's filter, including queues added manually. Queues using a different driver remain. The downloaded `.pkg` is not an installed file and remains wherever you saved it. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
+If any print queue still uses this driver's filter, including a manually added SMB queue, the script stops before changing files or queues. Change that queue to another driver or remove it in **Printers & Scanners**, then run the script again. The script never deletes printer queues automatically.
+
+When no queue depends on the driver, the script removes the setup app, driver directory, PPD, support directory, and package receipt. It also removes any leftover graphical uninstaller app or receipt from versions 0.4–0.5. The downloaded `.pkg` is not an installed file and remains wherever you saved it. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
 
 ## Development and verification
 
@@ -66,7 +68,7 @@ The uninstaller removes the setup app, driver directory, PPD, support directory,
 make test
 ```
 
-The tests build and extract a temporary installer package. They check the filters, firmware, PPD, setup app, uninstaller script, upgrade cleanup script, queue identification, app signature, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
+The tests build and extract a temporary installer package. They check the filters, firmware, PPD, setup app, uninstaller script, upgrade cleanup script, queue dependency guard, app signature, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
 
 ### Verified build environment (October 14, 2026)
 

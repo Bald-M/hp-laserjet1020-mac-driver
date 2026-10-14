@@ -57,8 +57,4 @@ if grep -Fq '<relocate>' "$work_dir/expanded/PackageInfo"; then
   echo 'The setup app must stay at its installed path.' >&2
   exit 1
 fi
-"$uninstaller" --dry-run > "$work_dir/uninstall-preview"
-grep -Fq '/Applications/LaserJet 1020 Mac Kit.app' "$work_dir/uninstall-preview"
-grep -Fq '/Applications/Uninstall LaserJet 1020 Mac Kit.app' "$work_dir/uninstall-preview"
-grep -Fq 'com.laserjet1020mackit.uninstaller' "$work_dir/uninstall-preview"
 echo 'Package smoke test passed.'

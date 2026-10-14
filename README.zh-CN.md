@@ -15,10 +15,10 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make release
 ```
 
-`make package` 或 `make release` 只生成一个 Release 文件：`dist/LaserJet1020MacKit-0.6.0.pkg`。发布前请确认第三方驱动文件的分发权利。指定版本的上游文件会下载到被 Git 忽略的 `build/upstream/` 目录。如果已有上游仓库的本地副本，可用 `make release SOURCE_DIR=/path/to/hp1020-driver-mac` 离线构建。在 Finder 中打开 `.pkg` 即可安装，也可运行：
+`make package` 或 `make release` 只生成一个 Release 文件：`dist/LaserJet1020MacKit-0.6.1.pkg`。发布前请确认第三方驱动文件的分发权利。指定版本的上游文件会下载到被 Git 忽略的 `build/upstream/` 目录。如果已有上游仓库的本地副本，可用 `make release SOURCE_DIR=/path/to/hp1020-driver-mac` 离线构建。在 Finder 中打开 `.pkg` 即可安装，也可运行：
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.6.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.6.1.pkg -target /
 ```
 
 这个本地构建的安装包没有 Developer ID 签名，也没有经过公证。本项目不发布含第三方驱动资源的安装包。发布或分发前请确认这些资源的使用权利，详情见 [THIRD_PARTY.md](THIRD_PARTY.md)。
@@ -58,7 +58,9 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 
 通过 **系统设置 → 通用 → 储存空间 → 应用程序** 删除打印机设置 App 不会运行卸载器。要完整清理，请运行 shell 脚本。
 
-卸载脚本会删除打印机设置 App、驱动目录、PPD、支持目录和安装包收据；还会清理 0.4–0.5 版可能残留的图形化卸载 App 和收据。它会删除当前 PPD 仍指向本项目过滤器的所有本地打印队列，包括手动添加的队列。使用其他驱动的队列会保留。下载的 `.pkg` 文件不属于已安装文件，会保留在用户保存的位置。安装包使用独立目录，不会覆盖从上游仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
+如果仍有打印队列使用本驱动的过滤器，包括手动添加的 SMB 队列，脚本会在修改文件或队列前停止。先在 **打印机与扫描仪** 中为该队列换用其他驱动，或自行删除该队列，再重新运行脚本。脚本不会自动删除打印队列。
+
+没有队列依赖本驱动时，脚本会删除打印机设置 App、驱动目录、PPD、支持目录和安装包收据；还会清理 0.4–0.5 版可能残留的图形化卸载 App 和收据。下载的 `.pkg` 文件不属于已安装文件，会保留在用户保存的位置。安装包使用独立目录，不会覆盖从上游仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
 
 ## 开发与验证
 
@@ -66,7 +68,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 make test
 ```
 
-测试会构建并解开临时安装包，检查过滤器、固件、PPD、设置 App、卸载脚本、升级清理脚本、队列识别、App 签名及改写后的 PPD 路径。测试不会在系统中安装文件，也不能证明真实硬件能够打印。
+测试会构建并解开临时安装包，检查过滤器、固件、PPD、设置 App、卸载脚本、升级清理脚本、队列依赖保护、App 签名及改写后的 PPD 路径。测试不会在系统中安装文件，也不能证明真实硬件能够打印。
 
 ### 已验证的构建环境（2026 年 10 月 14 日）
 
