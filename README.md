@@ -13,10 +13,10 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make package
 ```
 
-下载内容保存在忽略版本控制的 `build/upstream/`。如果已有参考仓库的本地副本，或需要离线构建，可运行 `make package SOURCE_DIR=/path/to/hp1020-driver-mac`。输出是 `dist/LaserJet1020MacKit-0.1.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
+下载内容保存在忽略版本控制的 `build/upstream/`。如果已有参考仓库的本地副本，或需要离线构建，可运行 `make package SOURCE_DIR=/path/to/hp1020-driver-mac`。输出是 `dist/LaserJet1020MacKit-0.2.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.1.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.2.0.pkg -target /
 ```
 
 此安装包由本机生成，未签名、未公证。项目不提供包含第三方驱动资源的公开发行包；发布或再分发前请自行确认这些资源的授权，见 [THIRD_PARTY.md](THIRD_PARTY.md)。
@@ -31,7 +31,7 @@ softwareupdate --install-rosetta
 
 ## 添加打印机
 
-安装包只安装驱动文件，不自动创建打印队列。连接并开启 HP LaserJet 1020 后，在“系统设置 → 打印机与扫描仪”中添加打印机，并选择 **HP LaserJet 1020 (Mac Kit)**。如果系统没有列出该驱动，可以用 CUPS 命令查看设备 URI 并添加：
+安装包只安装驱动文件，不自动创建打印队列。连接并开启 HP LaserJet 1020 后，在 Finder 打开 `/Library/Application Support/LaserJet1020MacKit/AddPrinter.command`；选择检测到的 USB 设备并输入管理员密码，即可创建独立打印队列。也可以在“系统设置 → 打印机与扫描仪”中添加打印机，并选择 **HP LaserJet 1020 (Mac Kit)**。如果系统没有列出该驱动，可以用 CUPS 命令查看设备 URI 并添加：
 
 ```sh
 lpinfo -v | grep -i usb
@@ -41,7 +41,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
   -D 'HP LaserJet 1020 (Mac Kit)'
 ```
 
-将示例 URI 换成 `lpinfo -v` 的实际输出。`lpadmin` 可能提示 PPD 驱动已弃用，这是 CUPS 对传统驱动的提示。打印测试页或 PDF 后用 `lpstat -p HP_LaserJet_1020` 检查队列状态。
+将示例 URI 换成 `lpinfo -v` 的实际输出。`lpadmin` 可能提示 PPD 驱动已弃用，这是 CUPS 对传统驱动的提示。用添加工具创建队列时名称为 `HP_LaserJet_1020_MacKit`；打印测试页或 PDF 后可用 `lpstat -p HP_LaserJet_1020_MacKit` 检查状态。
 
 ## 卸载
 

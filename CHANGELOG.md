@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0 — 2026-10-14
+
+- Added a guided USB printer queue setup tool in the installer package.
+
 ## 0.1.0 — 2026-10-14
 
 - Added a macOS `.pkg` builder with a pinned local download of the reference driver assets or an offline source directory.

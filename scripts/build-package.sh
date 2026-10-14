@@ -49,6 +49,7 @@ install -m 755 "$source_dir/rasterToHPZJS" "$bundle/Contents/MacOS/rasterToHPZJS
 install -m 755 "$source_dir/commandToHPZJS" "$bundle/Contents/MacOS/commandToHPZJS"
 install -m 644 "$source_dir/hp1020.acl" "$bundle/Contents/Resources/hp1020.acl"
 install -m 755 "$project_dir/Uninstall.command" "$support_dir/Uninstall.command"
+install -m 755 "$project_dir/AddPrinter.command" "$support_dir/AddPrinter.command"
 
 plain_ppd="$work_dir/LaserJet 1020 Mac Kit.ppd"
 gzip -dc "$source_dir/HP LaserJet 1022.gz" |

@@ -20,10 +20,12 @@ payload="$work_dir/payload/Library"
 bundle="$payload/Printers/LaserJet1020MacKit/LaserJet1020.bundle"
 ppd="$payload/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz"
 uninstaller="$payload/Application Support/LaserJet1020MacKit/Uninstall.command"
+add_printer="$payload/Application Support/LaserJet1020MacKit/AddPrinter.command"
 [[ -x "$bundle/Contents/MacOS/rasterToHPZJS" ]]
 [[ -x "$bundle/Contents/MacOS/commandToHPZJS" ]]
 [[ -s "$bundle/Contents/Resources/hp1020.acl" ]]
 [[ -x "$uninstaller" ]]
+[[ -x "$add_printer" ]]
 [[ -s "$ppd" ]]
 gzip -dc "$ppd" > "$work_dir/driver.ppd"
 grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS' "$work_dir/driver.ppd"

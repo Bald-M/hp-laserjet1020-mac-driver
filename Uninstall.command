@@ -10,6 +10,7 @@ files=(
   "$bundle/Contents/MacOS/rasterToHPZJS"
   "$bundle/Contents/MacOS/commandToHPZJS"
   "$bundle/Contents/Resources/hp1020.acl"
+  "$support/AddPrinter.command"
   "$support/Uninstall.command"
 )
 
