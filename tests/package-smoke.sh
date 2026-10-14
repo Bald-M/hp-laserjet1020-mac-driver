@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+
+project_dir="$(cd "$(dirname "$0")/.." && pwd -P)"
+source_dir="${1:-}"
+if [[ -z "$source_dir" || $# -ne 1 ]]; then
+  echo "Usage: $0 /path/to/hp1020-driver-mac" >&2
+  exit 2
+fi
+
+work_dir="$(mktemp -d "${TMPDIR:-/tmp/}laserjet1020-test.XXXXXX")"
+trap 'rm -rf "$work_dir"' EXIT
+DIST_DIR="$work_dir/dist" "$project_dir/scripts/build-package.sh" "$source_dir"
+package="$work_dir/dist/LaserJet1020MacKit-$(cat "$project_dir/VERSION").pkg"
+pkgutil --expand "$package" "$work_dir/expanded"
+mkdir -p "$work_dir/payload"
+(cd "$work_dir/payload" && gzip -dc "$work_dir/expanded/Payload" | cpio -id --quiet)
+
+payload="$work_dir/payload/Library"
+bundle="$payload/Printers/LaserJet1020MacKit/LaserJet1020.bundle"
+ppd="$payload/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz"
+uninstaller="$payload/Application Support/LaserJet1020MacKit/Uninstall.command"
+[[ -x "$bundle/Contents/MacOS/rasterToHPZJS" ]]
+[[ -x "$bundle/Contents/MacOS/commandToHPZJS" ]]
+[[ -s "$bundle/Contents/Resources/hp1020.acl" ]]
+[[ -x "$uninstaller" ]]
+[[ -s "$ppd" ]]
+gzip -dc "$ppd" > "$work_dir/driver.ppd"
+grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS' "$work_dir/driver.ppd"
+grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/commandToHPZJS' "$work_dir/driver.ppd"
+grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/Resources/hp1020.acl' "$work_dir/driver.ppd"
+if grep -Fq '/Library/Printers/hp/laserjet/hplaserjetzjs.bundle' "$work_dir/driver.ppd"; then
+  echo 'PPD still refers to the shared HP driver directory' >&2
+  exit 1
+fi
+grep -Fq 'identifier="com.laserjet1020mackit.driver"' "$work_dir/expanded/PackageInfo"
+"$uninstaller" --dry-run >/dev/null
+echo 'Package smoke test passed.'
