@@ -1,9 +1,12 @@
-.PHONY: package test
+.PHONY: source package test
 
-package:
-	@test -n "$(SOURCE_DIR)" || { echo 'Set SOURCE_DIR to a checkout of the reference driver repository.' >&2; exit 2; }
+SOURCE_DIR ?= build/upstream
+
+source:
+	@if [ "$(SOURCE_DIR)" = 'build/upstream' ]; then ./scripts/fetch-source.sh; else test -d "$(SOURCE_DIR)"; fi
+
+package: source
 	./scripts/build-package.sh "$(SOURCE_DIR)"
 
-test:
-	@test -n "$(SOURCE_DIR)" || { echo 'Set SOURCE_DIR to a checkout of the reference driver repository.' >&2; exit 2; }
+test: source
 	./tests/package-smoke.sh "$(SOURCE_DIR)"

@@ -6,16 +6,14 @@
 
 ## 获取并构建安装包
 
-需要 macOS、Xcode Command Line Tools（提供 `pkgbuild`、`lipo` 等工具）和参考仓库的四个文件。先将参考仓库检出到本机，再构建：
+需要 macOS、Xcode Command Line Tools（提供 `pkgbuild`、`lipo` 等工具）和网络连接。在项目目录执行一条命令即可下载固定版本的参考文件并构建：
 
 ```sh
-git clone https://github.com/anxkhn/hp1020-driver-mac.git "$HOME/Code/hp1020-driver-mac-source"
-git -C "$HOME/Code/hp1020-driver-mac-source" checkout f9d2f7e2a22b7bfb80d4cb51e42de61c88f7dfdc
 cd "$HOME/Code/laserjet1020-mac-kit"
-make package SOURCE_DIR="$HOME/Code/hp1020-driver-mac-source"
+make package
 ```
 
-输出是 `dist/LaserJet1020MacKit-0.1.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
+下载内容保存在忽略版本控制的 `build/upstream/`。如果已有参考仓库的本地副本，或需要离线构建，可运行 `make package SOURCE_DIR=/path/to/hp1020-driver-mac`。输出是 `dist/LaserJet1020MacKit-0.1.0.pkg`。可在 Finder 中打开安装，也可在终端运行：
 
 ```sh
 sudo installer -pkg dist/LaserJet1020MacKit-0.1.0.pkg -target /
@@ -59,7 +57,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 ## 开发与验证
 
 ```sh
-make test SOURCE_DIR="$HOME/Code/hp1020-driver-mac-source"
+make test
 ```
 
 测试会构建临时安装包、解开 payload，核对程序、固件、PPD、卸载工具和 PPD 中的路径。它不会执行系统安装，也不代表完成了真实打印测试。
