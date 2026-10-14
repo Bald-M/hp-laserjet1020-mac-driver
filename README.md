@@ -52,7 +52,6 @@ Replace the example URI with the actual value from `lpinfo -v`. `lpadmin` may wa
 Run the installed shell script in Terminal. It asks you to type `REMOVE` and then requests administrator privileges:
 
 ```sh
-'/Library/Application Support/LaserJet1020MacKit/uninstall.sh' --dry-run
 '/Library/Application Support/LaserJet1020MacKit/uninstall.sh'
 ```
 
