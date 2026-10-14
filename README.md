@@ -1,5 +1,7 @@
 # LaserJet 1020 Mac Kit
 
+English | [简体中文](README.zh-CN.md)
+
 LaserJet 1020 Mac Kit builds a local macOS installer for the HP LaserJet 1020. The `.pkg` installs existing CUPS filters, firmware, a PPD, a printer setup app, and a graphical uninstaller, so users do not have to copy driver files manually.
 
 This project does not reimplement the printer protocol. Its build inputs come from [anxkhn/hp1020-driver-mac](https://github.com/anxkhn/hp1020-driver-mac). That repository's filters contain **x86_64** code, not universal binaries. They run directly on Intel Macs; Apple silicon Macs need Rosetta. The package also relies on the legacy CUPS PPD driver mechanism, which future macOS versions may change. The reference repository reports that its driver works on macOS 26 Tahoe. This project's automated checks cover the package contents and PPD; printing still needs to be tested with a connected HP LaserJet 1020.
