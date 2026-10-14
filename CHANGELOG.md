@@ -2,7 +2,8 @@
 
 ## 0.2.0 — 2026-10-14
 
-- Added a guided USB printer queue setup tool in the installer package.
+- Added a guided USB printer queue setup tool with vendor and model matching.
+- Made uninstall remove the tool-created queue when it still uses this kit's PPD.
 
 ## 0.1.0 — 2026-10-14
 

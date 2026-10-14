@@ -4,6 +4,29 @@ set -euo pipefail
 ppd='/Library/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz'
 queue='HP_LaserJet_1020_MacKit'
 
+is_target_uri() {
+  local uri="$1" address vendor model
+  [[ "$uri" == usb://*/* ]] || return 1
+  address="${uri#usb://}"
+  vendor="${address%%/*}"
+  model="${address#*/}"
+  model="${model%%\?*}"
+  vendor="$(printf '%s' "$vendor" | /usr/bin/tr '[:upper:]' '[:lower:]')"
+  model="$(printf '%s' "$model" | /usr/bin/tr '[:upper:]' '[:lower:]')"
+  case "$vendor" in
+    hp|hewlett-packard|hewlett%20packard) ;;
+    *) return 1 ;;
+  esac
+  case "$model" in
+    *laserjet*1020|*laserjet*1020%20*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+  return 0
+fi
+
 if [[ $# -ne 0 ]]; then
   echo "Usage: $0" >&2
   exit 2
@@ -17,15 +40,19 @@ if /usr/bin/lpstat -p "$queue" >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! devices="$(/usr/sbin/lpinfo -v)"; then
+  echo 'CUPS could not list printer devices. Check the printing service and retry.' >&2
+  exit 1
+fi
+
 uris=()
 while IFS= read -r line; do
   [[ "$line" == 'direct usb://'* ]] || continue
   uri="${line#direct }"
-  lower_uri="$(printf '%s' "$uri" | /usr/bin/tr '[:upper:]' '[:lower:]')"
-  if [[ "$lower_uri" == *1020* ]]; then
+  if is_target_uri "$uri"; then
     uris+=("$uri")
   fi
-done < <(/usr/sbin/lpinfo -v)
+done <<< "$devices"
 
 if [[ ${#uris[@]} -eq 0 ]]; then
   echo 'No USB LaserJet 1020 was found. Connect and power on the printer, then retry.' >&2

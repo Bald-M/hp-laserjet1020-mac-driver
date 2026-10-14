@@ -5,6 +5,8 @@ package_id='com.laserjet1020mackit.driver'
 bundle='/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle'
 ppd='/Library/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz'
 support='/Library/Application Support/LaserJet1020MacKit'
+queue='HP_LaserJet_1020_MacKit'
+queue_ppd="/etc/cups/ppd/$queue.ppd"
 files=(
   "$ppd"
   "$bundle/Contents/MacOS/rasterToHPZJS"
@@ -36,7 +38,8 @@ if [[ "$dry_run" == true ]]; then
   printf 'Would remove:\n'
   printf '  %s\n' "${files[@]}"
   echo "Would forget receipt: $package_id"
-  echo 'Printer queues are left for you to remove in System Settings.'
+  echo "Would remove $queue if its PPD still identifies this kit."
+  echo 'Other printer queues would remain.'
   exit 0
 fi
 
@@ -47,13 +50,25 @@ fi
 
 if [[ "$assume_yes" != true ]]; then
   echo 'Remove LaserJet 1020 Mac Kit driver files and package receipt?'
-  echo 'Printer queues will remain and can be removed in System Settings.'
+  echo "The $queue queue will also be removed if it still uses this kit's PPD."
+  echo 'Other printer queues will remain.'
   read -r -p 'Type REMOVE to continue: ' answer
   [[ "$answer" == REMOVE ]] || { echo 'Cancelled.'; exit 1; }
 fi
 
 if [[ $EUID -ne 0 ]]; then
   exec /usr/bin/sudo /bin/bash "$0" --yes
+fi
+
+if [[ -f "$queue_ppd" ]] && /usr/bin/grep -Fq '*NickName: "HP LaserJet 1020 (Mac Kit)"' "$queue_ppd"; then
+  if ! /usr/bin/lpstat -p "$queue" >/dev/null 2>&1; then
+    echo "Could not verify $queue with CUPS; driver files were left in place." >&2
+    exit 1
+  fi
+  /usr/sbin/lpadmin -x "$queue"
+  echo "Removed printer queue $queue."
+elif /usr/bin/lpstat -p "$queue" >/dev/null 2>&1; then
+  echo "Kept $queue because its PPD does not identify this kit." >&2
 fi
 
 for path in "${files[@]}"; do
@@ -71,4 +86,4 @@ for path in \
   /bin/rmdir "$path" 2>/dev/null || true
 done
 /usr/sbin/pkgutil --forget "$package_id"
-echo 'Driver files removed. Remove any remaining printer queue in System Settings.'
+echo 'Driver files removed. Remove any other printer queue in System Settings if needed.'

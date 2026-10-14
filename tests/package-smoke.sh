@@ -28,6 +28,7 @@ add_printer="$payload/Application Support/LaserJet1020MacKit/AddPrinter.command"
 [[ -x "$add_printer" ]]
 [[ -s "$ppd" ]]
 gzip -dc "$ppd" > "$work_dir/driver.ppd"
+grep -Fq '*NickName: "HP LaserJet 1020 (Mac Kit)"' "$work_dir/driver.ppd"
 grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS' "$work_dir/driver.ppd"
 grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/commandToHPZJS' "$work_dir/driver.ppd"
 grep -Fq '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/Resources/hp1020.acl' "$work_dir/driver.ppd"

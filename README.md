@@ -41,7 +41,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
   -D 'HP LaserJet 1020 (Mac Kit)'
 ```
 
-将示例 URI 换成 `lpinfo -v` 的实际输出。`lpadmin` 可能提示 PPD 驱动已弃用，这是 CUPS 对传统驱动的提示。用添加工具创建队列时名称为 `HP_LaserJet_1020_MacKit`；打印测试页或 PDF 后可用 `lpstat -p HP_LaserJet_1020_MacKit` 检查状态。
+将示例 URI 换成 `lpinfo -v` 的实际输出。`lpadmin` 可能提示 PPD 驱动已弃用，这是 CUPS 对传统驱动的提示。添加工具创建的队列名为 `HP_LaserJet_1020_MacKit`；上方手动命令创建的队列名为 `HP_LaserJet_1020`。打印测试页或 PDF 后，用 `lpstat -p <队列名>` 检查对应队列。
 
 ## 卸载
 
@@ -52,7 +52,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
 ```
 
-卸载工具只删除本项目安装的文件和包收据。已添加的打印队列会保留，请在“系统设置 → 打印机与扫描仪”中移除。安装包使用独立目录，不覆盖参考仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
+卸载工具删除本项目安装的文件和包收据；如果添加工具创建的队列仍使用本项目 PPD，也会移除该队列。手动创建或已改用其他 PPD 的队列会保留，可在“系统设置 → 打印机与扫描仪”中移除。安装包使用独立目录，不覆盖参考仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
 
 ## 开发与验证
 

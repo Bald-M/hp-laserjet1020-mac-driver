@@ -9,4 +9,5 @@ package: source
 	./scripts/build-package.sh "$(SOURCE_DIR)"
 
 test: source
+	./tests/uri-filter.sh
 	./tests/package-smoke.sh "$(SOURCE_DIR)"
