@@ -16,6 +16,15 @@ files=(
   "$support/Uninstall.command"
 )
 
+is_our_queue_ppd() {
+  [[ -f "$1" ]] && /usr/bin/grep -Fq \
+    '/Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS' "$1"
+}
+
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+  return 0
+fi
+
 usage() {
   echo "Usage: $0 [--dry-run | --yes]"
 }
@@ -60,7 +69,7 @@ if [[ $EUID -ne 0 ]]; then
   exec /usr/bin/sudo /bin/bash "$0" --yes
 fi
 
-if [[ -f "$queue_ppd" ]] && /usr/bin/grep -Fq '*NickName: "HP LaserJet 1020 (Mac Kit)"' "$queue_ppd"; then
+if is_our_queue_ppd "$queue_ppd"; then
   if ! /usr/bin/lpstat -p "$queue" >/dev/null 2>&1; then
     echo "Could not verify $queue with CUPS; driver files were left in place." >&2
     exit 1

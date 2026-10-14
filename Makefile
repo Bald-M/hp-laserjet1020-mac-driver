@@ -10,4 +10,5 @@ package: source
 
 test: source
 	./tests/uri-filter.sh
+	./tests/queue-ownership.sh
 	./tests/package-smoke.sh "$(SOURCE_DIR)"
