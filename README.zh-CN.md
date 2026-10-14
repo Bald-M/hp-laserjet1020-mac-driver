@@ -15,10 +15,10 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make release
 ```
 
-`make package` 只构建安装包。`make release` 会生成两个文件：`dist/LaserJet1020MacKit-0.4.0.pkg` 和 `dist/LaserJet1020MacKit-Uninstaller-0.4.0.zip`。确认第三方驱动文件的分发权利后，可将两个文件放在同一个 Release 中。指定版本的上游文件会下载到被 Git 忽略的 `build/upstream/` 目录。如果已有上游仓库的本地副本，可用 `make release SOURCE_DIR=/path/to/hp1020-driver-mac` 离线构建。在 Finder 中打开 `.pkg` 即可安装，也可运行：
+`make package` 只构建驱动安装包。`make release` 会生成两个文件：`dist/LaserJet1020MacKit-0.5.0.pkg` 和 `dist/LaserJet1020MacKit-Uninstaller-0.5.0.pkg`。确认第三方驱动文件的分发权利后，可将两个文件放在同一个 Release 中。指定版本的上游文件会下载到被 Git 忽略的 `build/upstream/` 目录。如果已有上游仓库的本地副本，可用 `make release SOURCE_DIR=/path/to/hp1020-driver-mac` 离线构建。在 Finder 中打开驱动 `.pkg` 即可安装，也可运行：
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.4.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.5.0.pkg -target /
 ```
 
 这些本地构建的 Release 文件没有 Developer ID 签名，也没有经过公证。本项目不发布含第三方驱动资源的安装包。发布或分发前请确认这些资源的使用权利，详情见 [THIRD_PARTY.md](THIRD_PARTY.md)。
@@ -49,7 +49,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 
 ## 卸载
 
-在“应用程序”文件夹打开 **Uninstall LaserJet 1020 Mac Kit.app**，点击 **Uninstall**，并通过 macOS 标准管理员授权提示。图形化 App 可完成清理，无需使用“终端”。`dist/LaserJet1020MacKit-Uninstaller-0.4.0.zip` 也提供独立副本，即使已删除打印机设置 App，仍可运行卸载器。
+在“应用程序”文件夹打开 **Uninstall LaserJet 1020 Mac Kit.app**，点击 **Uninstall**，并通过 macOS 标准管理员授权提示。图形化 App 可完成清理，无需使用“终端”。如果这个 App 已被删除，打开 `dist/LaserJet1020MacKit-Uninstaller-0.5.0.pkg`，将卸载 App 重新安装到“应用程序”文件夹，然后打开它并点击 **Uninstall**。仅安装这个独立 `.pkg` 不会自动卸载驱动。
 
 通过 **系统设置 → 通用 → 储存空间 → 应用程序** 删除打印机设置 App 不会运行卸载器。要完整清理，请运行独立卸载器。
 
@@ -60,7 +60,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
 ```
 
-卸载器会删除两个已安装的 App、驱动目录、PPD、支持目录和安装包收据。它还会删除当前 PPD 仍指向本项目过滤器的所有本地打印队列，包括手动添加的队列。使用其他驱动的队列会保留。已下载的 `.pkg` 和 `.zip` 文件不属于已安装文件，会保留在用户保存的位置。安装包使用独立目录，不会覆盖从上游仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
+卸载器会删除两个已安装的 App、驱动目录、PPD、支持目录，以及存在的两个安装包收据。它还会删除当前 PPD 仍指向本项目过滤器的所有本地打印队列，包括手动添加的队列。使用其他驱动的队列会保留。已下载的 `.pkg` 文件不属于已安装文件，会保留在用户保存的位置。安装包使用独立目录，不会覆盖从上游仓库手动安装在 `/Library/Printers/hp/laserjet/` 的文件。
 
 ## 开发与验证
 
@@ -68,7 +68,7 @@ sudo lpadmin -p HP_LaserJet_1020 -E \
 make test
 ```
 
-测试会构建并解开临时安装包和独立卸载器归档，检查过滤器、固件、PPD、两个 App、队列识别、App 签名及改写后的 PPD 路径。测试不会在系统中安装文件，也不能证明真实硬件能够打印。
+测试会构建并解开临时驱动安装包与独立卸载安装包，检查过滤器、固件、PPD、两个 App、队列识别、App 签名及改写后的 PPD 路径。测试不会在系统中安装文件，也不能证明真实硬件能够打印。
 
 ### 已验证的构建环境（2026 年 10 月 14 日）
 

@@ -9,8 +9,20 @@ dist_dir="$(cd "$dist_dir" && pwd -P)"
 work_dir="$(mktemp -d "${TMPDIR:-/tmp/}laserjet1020-release.XXXXXX")"
 trap 'rm -rf "$work_dir"' EXIT
 
-app="$work_dir/Uninstall LaserJet 1020 Mac Kit.app"
+root="$work_dir/root"
+mkdir -p "$root/Applications"
+app="$root/Applications/Uninstall LaserJet 1020 Mac Kit.app"
 "$project_dir/scripts/build-uninstaller-app.sh" "$app"
-archive="$dist_dir/LaserJet1020MacKit-Uninstaller-$version.zip"
-/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$app" "$archive"
-echo "Built: $archive"
+components="$work_dir/components.plist"
+pkgbuild --analyze --root "$root" "$components"
+/usr/libexec/PlistBuddy -c 'Set :0:BundleIsRelocatable false' "$components"
+package="$dist_dir/LaserJet1020MacKit-Uninstaller-$version.pkg"
+COPYFILE_DISABLE=1 pkgbuild \
+  --root "$root" \
+  --component-plist "$components" \
+  --identifier com.laserjet1020mackit.uninstaller \
+  --version "$version" \
+  --install-location / \
+  --ownership recommended \
+  "$package"
+echo "Built: $package"

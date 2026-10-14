@@ -15,10 +15,10 @@ cd "$HOME/Code/laserjet1020-mac-kit"
 make release
 ```
 
-`make package` builds only the installer. `make release` builds both release assets: `dist/LaserJet1020MacKit-0.4.0.pkg` and `dist/LaserJet1020MacKit-Uninstaller-0.4.0.zip`. Upload both assets to the same release after checking the rights for the third-party driver files. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the `.pkg` in Finder to install, or use:
+`make package` builds only the driver installer. `make release` builds both release assets: `dist/LaserJet1020MacKit-0.5.0.pkg` and `dist/LaserJet1020MacKit-Uninstaller-0.5.0.pkg`. Upload both assets to the same release after checking the rights for the third-party driver files. The pinned reference files are downloaded into the ignored `build/upstream/` directory. If you already have a local copy of the reference repository, you can build offline with `make release SOURCE_DIR=/path/to/hp1020-driver-mac`. Open the driver `.pkg` in Finder to install, or use:
 
 ```sh
-sudo installer -pkg dist/LaserJet1020MacKit-0.4.0.pkg -target /
+sudo installer -pkg dist/LaserJet1020MacKit-0.5.0.pkg -target /
 ```
 
 These locally built release files are not Developer ID signed or notarized. This project does not publish packages containing the third-party driver assets. Check the rights for those assets before publishing or redistributing a package; see [THIRD_PARTY.md](THIRD_PARTY.md).
@@ -49,7 +49,7 @@ Replace the example URI with the actual value from `lpinfo -v`. `lpadmin` may wa
 
 ## Uninstall
 
-Open **Uninstall LaserJet 1020 Mac Kit.app** in Applications, click **Uninstall**, and approve the standard macOS administrator prompt. The graphical app handles the cleanup without Terminal. A standalone copy is also available in `dist/LaserJet1020MacKit-Uninstaller-0.4.0.zip`, so it can be used even if the printer setup app has already been deleted.
+Open **Uninstall LaserJet 1020 Mac Kit.app** in Applications, click **Uninstall**, and approve the standard macOS administrator prompt. The graphical app handles the cleanup without Terminal. If that app has been deleted, open `dist/LaserJet1020MacKit-Uninstaller-0.5.0.pkg` to reinstall it in Applications, then open the app and click **Uninstall**. The standalone package does not uninstall the driver just by being installed.
 
 Deleting the printer setup app through **System Settings → General → Storage → Applications** does not run the uninstaller. Run the standalone uninstaller for complete cleanup.
 
@@ -60,7 +60,7 @@ You can also open `/Library/Application Support/LaserJet1020MacKit/Uninstall.com
 '/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
 ```
 
-The uninstaller removes both installed apps, the driver directory, the PPD, the support directory, and the package receipt. It removes every local print queue whose active PPD still points to this project's filter, including queues added manually. Queues using a different driver remain. Downloaded `.pkg` and `.zip` files are not installed files and remain wherever you saved them. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
+The uninstaller removes both installed apps, the driver directory, the PPD, the support directory, and both package receipts if present. It removes every local print queue whose active PPD still points to this project's filter, including queues added manually. Queues using a different driver remain. Downloaded `.pkg` files are not installed files and remain wherever you saved them. The package uses its own directory and does not overwrite files manually installed from the reference repository under `/Library/Printers/hp/laserjet/`.
 
 ## Development and verification
 
@@ -68,7 +68,7 @@ The uninstaller removes both installed apps, the driver directory, the PPD, the 
 make test
 ```
 
-The tests build and extract a temporary package and standalone uninstaller archive. They check the filters, firmware, PPD, both apps, queue identification, app signatures, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
+The tests build and extract temporary driver and standalone uninstaller packages. They check the filters, firmware, PPD, both apps, queue identification, app signatures, and rewritten PPD paths. They do not install anything system-wide or prove that printing works with real hardware.
 
 ### Verified build environment (October 14, 2026)
 

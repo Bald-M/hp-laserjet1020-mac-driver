@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 — 2026-10-14
+
+- Replaced the standalone uninstaller ZIP with a `.pkg` that installs the graphical uninstaller in Applications without manual extraction.
+- Made the uninstaller forget the standalone package receipt during cleanup.
+
 ## 0.4.0 — 2026-10-14
 
 - Added a standalone graphical uninstaller, included in the package and built as a separate release archive.
