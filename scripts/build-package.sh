@@ -57,6 +57,7 @@ plutil -replace CFBundleIdentifier -string com.laserjet1020mackit.manager "$app/
 plutil -replace CFBundleShortVersionString -string "$version" "$app/Contents/Info.plist"
 plutil -replace CFBundleVersion -string "$version" "$app/Contents/Info.plist"
 codesign --force --sign - "$app"
+"$project_dir/scripts/build-uninstaller-app.sh" "$applications_dir/Uninstall LaserJet 1020 Mac Kit.app"
 
 plain_ppd="$work_dir/LaserJet 1020 Mac Kit.ppd"
 gzip -dc "$source_dir/HP LaserJet 1022.gz" |
@@ -94,6 +95,7 @@ package="$dist_dir/LaserJet1020MacKit-$version.pkg"
 components="$work_dir/components.plist"
 pkgbuild --analyze --root "$root" "$components"
 /usr/libexec/PlistBuddy -c 'Set :0:BundleIsRelocatable false' "$components"
+/usr/libexec/PlistBuddy -c 'Set :1:BundleIsRelocatable false' "$components"
 COPYFILE_DISABLE=1 pkgbuild \
   --root "$root" \
   --component-plist "$components" \

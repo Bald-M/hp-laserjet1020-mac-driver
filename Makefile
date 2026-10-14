@@ -1,4 +1,4 @@
-.PHONY: source package test
+.PHONY: source package release test
 
 SOURCE_DIR ?= build/upstream
 
@@ -8,7 +8,11 @@ source:
 package: source
 	./scripts/build-package.sh "$(SOURCE_DIR)"
 
+release: package
+	./scripts/build-release.sh
+
 test: source
 	./tests/uri-filter.sh
 	./tests/queue-ownership.sh
 	./tests/package-smoke.sh "$(SOURCE_DIR)"
+	./tests/release-smoke.sh

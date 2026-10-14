@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 — 2026-10-14
+
+- Added a standalone graphical uninstaller, included in the package and built as a separate release archive.
+- Made uninstall remove all local queues still using this kit's filter, including manually created queues.
+- Made the printer setup app English-only and moved uninstall out of that app.
+
 ## 0.3.0 — 2026-10-14
 
 - Added a manager app in Applications to open the printer setup and driver uninstaller tools.
