@@ -1,8 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-ppd='/Library/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz'
-queue='HP_LaserJet_1020_MacKit'
+ppd='/Library/Printers/PPDs/Contents/Resources/HP LaserJet 1020 Mac Driver.gz'
+queue='HP_LaserJet_1020_MacDriver'
+legacy_queue='HP_LaserJet_1020_MacKit'
 
 is_target_uri() {
   local uri="$1" address vendor model
@@ -32,11 +33,15 @@ if [[ $# -ne 0 ]]; then
   exit 2
 fi
 if [[ ! -f "$ppd" ]]; then
-  echo 'Driver PPD not found. Install LaserJet 1020 Mac Kit first.' >&2
+  echo 'Driver PPD not found. Install HP LaserJet 1020 Mac Driver first.' >&2
   exit 1
 fi
 if /usr/bin/lpstat -p "$queue" >/dev/null 2>&1; then
   echo "The printer queue $queue already exists. Check it in System Settings." >&2
+  exit 1
+fi
+if /usr/bin/lpstat -p "$legacy_queue" >/dev/null 2>&1; then
+  echo "The printer queue $legacy_queue already exists. Check it in System Settings." >&2
   exit 1
 fi
 
@@ -77,5 +82,5 @@ if [[ -z "$selected" ]]; then
 fi
 
 echo "Adding $queue for $selected"
-/usr/bin/sudo /usr/sbin/lpadmin -p "$queue" -E -v "$selected" -P "$ppd" -D 'HP LaserJet 1020 (Mac Kit)'
+/usr/bin/sudo /usr/sbin/lpadmin -p "$queue" -E -v "$selected" -P "$ppd" -D 'HP LaserJet 1020 Mac Driver'
 echo "Added $queue. Print a test page from System Settings."

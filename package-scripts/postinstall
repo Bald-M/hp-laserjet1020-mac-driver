@@ -4,6 +4,18 @@ set -euo pipefail
 legacy_app='/Applications/Uninstall LaserJet 1020 Mac Kit.app'
 legacy_script='/Library/Application Support/LaserJet1020MacKit/Uninstall.command'
 legacy_receipt='com.laserjet1020mackit.uninstaller'
+legacy_manager_app='/Applications/LaserJet 1020 Mac Kit.app'
+legacy_ppd='/Library/Printers/PPDs/Contents/Resources/LaserJet 1020 Mac Kit.gz'
+
+if [[ -d "$legacy_manager_app" && ! -L "$legacy_manager_app" ]] &&
+  [[ "$(/usr/bin/plutil -extract CFBundleIdentifier raw -o - "$legacy_manager_app/Contents/Info.plist" 2>/dev/null)" == 'com.laserjet1020mackit.manager' ]]; then
+  /bin/rm -rf "$legacy_manager_app"
+fi
+if [[ -f "$legacy_ppd" && ! -L "$legacy_ppd" ]] &&
+  /usr/bin/gzip -dc "$legacy_ppd" 2>/dev/null |
+    /usr/bin/grep -Fx '*cupsFilter: "application/vnd.cups-raster 100 /Library/Printers/LaserJet1020MacKit/LaserJet1020.bundle/Contents/MacOS/rasterToHPZJS"' >/dev/null; then
+  /bin/rm -f "$legacy_ppd"
+fi
 
 if [[ -d "$legacy_app" && ! -L "$legacy_app" ]] &&
   [[ "$(/usr/bin/plutil -extract CFBundleIdentifier raw -o - "$legacy_app/Contents/Info.plist" 2>/dev/null)" == "$legacy_receipt" ]]; then

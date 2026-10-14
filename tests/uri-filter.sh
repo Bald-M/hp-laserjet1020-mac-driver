@@ -4,6 +4,9 @@ set -euo pipefail
 project_dir="$(cd "$(dirname "$0")/.." && pwd -P)"
 # shellcheck source=AddPrinter.command
 source "$project_dir/AddPrinter.command"
+[[ "$queue" == 'HP_LaserJet_1020_MacDriver' ]]
+[[ "$legacy_queue" == 'HP_LaserJet_1020_MacKit' ]]
+[[ "$ppd" == '/Library/Printers/PPDs/Contents/Resources/HP LaserJet 1020 Mac Driver.gz' ]]
 
 is_target_uri 'usb://Hewlett-Packard/HP%20LaserJet%201020?serial=AB12'
 is_target_uri 'usb://HP/LaserJet%201020?serial=AB12'

@@ -51,20 +51,22 @@ install -m 755 "$source_dir/commandToHPZJS" "$bundle/Contents/MacOS/commandToHPZ
 install -m 644 "$source_dir/hp1020.acl" "$bundle/Contents/Resources/hp1020.acl"
 install -m 755 "$project_dir/uninstall.sh" "$support_dir/uninstall.sh"
 install -m 755 "$project_dir/AddPrinter.command" "$support_dir/AddPrinter.command"
-app="$applications_dir/LaserJet 1020 Mac Kit.app"
+app="$applications_dir/HP LaserJet 1020 Mac Driver.app"
 osacompile -o "$app" "$project_dir/app/Manager.applescript"
 plutil -replace CFBundleIdentifier -string com.laserjet1020mackit.manager "$app/Contents/Info.plist"
+plutil -replace CFBundleName -string 'HP LaserJet 1020 Mac Driver' "$app/Contents/Info.plist"
+plutil -replace CFBundleDisplayName -string 'HP LaserJet 1020 Mac Driver' "$app/Contents/Info.plist"
 plutil -replace CFBundleShortVersionString -string "$version" "$app/Contents/Info.plist"
 plutil -replace CFBundleVersion -string "$version" "$app/Contents/Info.plist"
 codesign --force --sign - "$app"
 
-plain_ppd="$work_dir/LaserJet 1020 Mac Kit.ppd"
+plain_ppd="$work_dir/HP LaserJet 1020 Mac Driver.ppd"
 gzip -dc "$source_dir/HP LaserJet 1022.gz" |
   sed \
     -e "s|$old_bundle|$new_bundle|g" \
     -e '/^\*APPrinterIconPath:/d' \
-    -e 's/^\*NickName: .*/\*NickName: "HP LaserJet 1020 (Mac Kit)"/' \
-    -e 's/^\*ShortNickName: .*/\*ShortNickName: "HP LaserJet 1020 (Mac Kit)"/' \
+    -e 's/^\*NickName: .*/\*NickName: "HP LaserJet 1020 Mac Driver"/' \
+    -e 's/^\*ShortNickName: .*/\*ShortNickName: "HP LaserJet 1020 Mac Driver"/' \
     -e 's/^\*CloseUI: \*JamRecovery$/\*JCLCloseUI: \*JamRecovery/' \
     -e 's/^\*CloseUI: \*PrintDensity$/\*JCLCloseUI: \*PrintDensity/' \
     > "$plain_ppd"
@@ -83,14 +85,14 @@ if command -v cupstestppd >/dev/null; then
   # Staged files are owned by the builder; pkgbuild installs them as root.
   cupstestppd -q -I filters "$plain_ppd"
 fi
-gzip -c "$plain_ppd" > "$ppd_dir/LaserJet 1020 Mac Kit.gz"
-chmod 644 "$ppd_dir/LaserJet 1020 Mac Kit.gz"
+gzip -c "$plain_ppd" > "$ppd_dir/HP LaserJet 1020 Mac Driver.gz"
+chmod 644 "$ppd_dir/HP LaserJet 1020 Mac Driver.gz"
 /usr/bin/xattr -cr "$root"
 
 dist_dir="${DIST_DIR:-$project_dir/dist}"
 mkdir -p "$dist_dir"
 dist_dir="$(cd "$dist_dir" && pwd -P)"
-package="$dist_dir/LaserJet1020MacKit-$version.pkg"
+package="$dist_dir/HPLaserJet1020MacDriver-$version.pkg"
 components="$work_dir/components.plist"
 pkgbuild --analyze --root "$root" "$components"
 /usr/libexec/PlistBuddy -c 'Set :0:BundleIsRelocatable false' "$components"

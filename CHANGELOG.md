@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.0 — 2026-10-14
+
+- Rename the visible product, setup app, PPD, and local installer to HP LaserJet 1020 Mac Driver.
+- Clean up the former app and PPD on upgrade while retaining internal paths and package IDs for existing print queues.
+
 ## 0.6.1 — 2026-10-14
 
 - Stop uninstallation before making changes if any print queue still uses this kit's driver, preserving manually added SMB and other queues.
